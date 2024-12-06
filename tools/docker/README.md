@@ -1,19 +1,36 @@
-# zCore develop docker image
+# zcore Docker Container Setup Guide
 
-Build docker image
+## Install Docker
 
-```
-git clone https://github.com/rcore-os/zCore --recursive
-cd tools/docker
-OS_TYPE=ubuntu
-OS_TAG=20.04
-IMAGE_TAG=latest
-./build_docker_image.sh ${OS_TYPE} ${OS_TAG} ${IMAGE_TAG}
-```
+**For Ubuntu Linux:**
+https://docs.docker.com/compose/install/
 
-Start docker container
+**For Mac OS:**
+https://docs.docker.com/docker-for-mac/install/
+
+## Method1: Create docker image and start a new container
 
 ```
-IMAGE_NAME=zcore:${OS_TYPE}-${OS_TAG}-${IMAGE_TAG}
-./start_container.sh ${IMAGE_NAME}
+### Change username, password and timezone
+$ vi .env
+
+### Creating new container
+$ docker-compose up -d
 ```
+
+## Method2: Import prebuilt docker image and start a new container
+
+```
+### Load prebuilt docker image to system
+$ docker load -i xxx-<version>.tar.gz
+
+### Creating new container
+$ docker-compose up -d
+```
+
+## Login container via SSH
+
+```
+$ ./zcore-shell.sh
+```
+

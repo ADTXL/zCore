@@ -1,0 +1,22 @@
+version: '3'
+services:
+  zcore_dev:
+    build:
+      context: ./build
+      args:
+        username: ${MY_NAME}
+        password: ${MY_PWD}
+        timezone: ${MY_TIMEZONE}
+    image: zcore:${MY_IMAGE_VERSION}
+    volumes:
+      - "./user_home:/home/${MY_NAME}"
+    ports:
+      - "9000:22"
+    networks:
+      - developer
+    privileged: true 
+    restart: always
+
+networks:
+  developer:
+

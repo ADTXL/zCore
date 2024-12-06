@@ -1,11 +1,32 @@
-ARG BASE_IMAGE=ubuntu:20.04
-FROM ${BASE_IMAGE}
+FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV INSTALL_PREFIX=/opt/zcore
 
-RUN apt-get update \
-    && apt-get install -y \
+ARG username
+ARG password
+ARG timezone
+
+RUN apt-get update && apt-get install -y openssh-server
+RUN mkdir /var/run/sshd
+
+RUN adduser --disabled-login --gecos '' $username
+RUN echo $username:$password | chpasswd
+RUN adduser $username sudo
+RUN adduser $username plugdev
+
+RUN sed -ri 's/^#?#X11UseLocalhost\s+.*/X11UseLocalhost no/' /etc/ssh/sshd_config
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+
+RUN echo $timezone > /etc/timezone
+
+RUN apt-get install -y software-properties-common
+
+RUN dpkg --add-architecture i386
+RUN add-apt-repository universe
+RUN apt-get update --fix-missing
+
+RUN apt-get install -y \
         build-essential \
         pkg-config \
         python3 \
@@ -16,11 +37,13 @@ RUN apt-get update \
         xz-utils \
         wget \
         curl \
-        vim \
-    && apt-get clean all \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf ~/.cache/pip/* \
-    && rm -rf /tmp/*
+        locales \
+        sudo \
+        bash-completion \
+        vim
+
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install git lfs
 RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
@@ -42,8 +65,15 @@ RUN mkdir -p ${INSTALL_PREFIX} \
 # Install rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
+RUN locale-gen en_US.UTF-8
+
+RUN sed -ri 's/^%sudo\s+ALL=\(ALL:ALL\)\s+ALL/%sudo ALL=(ALL:ALL) NOPASSWD:ALL/' /etc/sudoers
+
 ENV PATH="$HOME/.cargo/bin:$PATH"
 ENV WORK_SPACE_PATH=${INSTALL_PREFIX}/zcore
 
 WORKDIR ${WORK_SPACE_PATH}
 COPY . .
+
+CMD    ["/usr/sbin/sshd", "-D"]
+
