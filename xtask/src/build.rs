@@ -187,7 +187,7 @@ impl QemuArgs {
         .bin(None);
         // 设置 Qemu 参数
         let mut qemu = Qemu::system(arch_str);
-        qemu.args(&["-m", "2G"])
+        qemu.args(&["-m", "1G"])
             .arg("-kernel")
             .arg(&bin)
             .arg("-initrd")
